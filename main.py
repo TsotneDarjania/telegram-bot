@@ -2,6 +2,7 @@ import requests
 from bs4 import BeautifulSoup
 import telegram
 import asyncio
+import re;
 
 from datetime import datetime, timedelta
 
@@ -15,6 +16,8 @@ chat_id = '5285233665'
 
 # Initialize the Telegram bot
 bot = telegram.Bot(token=bot_token)
+
+currency = "USD"
 
 async def send_message():
     while True:
@@ -32,18 +35,18 @@ async def send_message():
         # Find all tr elements with an id attribute starting with "eventRowId_"
         rows = soup.select('tr[id^="eventRowId_"]')
 
-        usd_rows = []
+        currency_rows = []
 
         for row in rows:
             td_elements = row.find_all('td')
             for td in td_elements:
-                if 'USD' in td.text:
-                    usd_rows.append(row)
+                if currency in td.text:
+                    currency_rows.append(row)
 
         # only 3 star events
         target_rows = []
 
-        for row in usd_rows:
+        for row in currency_rows:
             td_elements = row.find_all('td')
             for td in td_elements:
                 if td.get('data-img_key') == 'bull3':
@@ -54,7 +57,7 @@ async def send_message():
 
             # Extract time from the td element
             time_str = td_elements[0].text
-            # time_str = "17:56" # For testing purposes
+            # time_str = "19:31" # For testing purposes
 
             # Append current date to time string
             datetime_str = f"{current_date} {time_str}"
@@ -83,8 +86,21 @@ async def send_message():
 
             if total_minutes == 0:
                 print("Event is happening now")
-                # color = "🟩"
-                message = event_name + " is happening now" + " Previous: " + previous + " " + "Forecast: " + forecast + " " + "Current: " + current
+                color = ""
+                extraText = ""
+
+                current_value_str = re.sub(r'[^\d.]', '', current)
+                forecast_value_str = re.sub(r'[^\d.]', '', forecast)
+
+                if float(current_value_str) > float(forecast_value_str):
+                    color = "🟩"
+                    extraText = "Better than expected"
+                else:
+                    color = "🟥"
+                    extraText = "Worse than expected"
+                
+               
+                message = event_name + " is happening now" + " Previous: " + previous + " " + "Forecast: " + forecast + " " + "Current: " + current + " " + color + " " + extraText
                 await bot.send_message(chat_id=chat_id, text=message)
 
         # Pause execution for 60 seconds before checking again
