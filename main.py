@@ -32,23 +32,24 @@ async def send_message():
         # Find all tr elements with an id attribute starting with "eventRowId_"
         rows = soup.select('tr[id^="eventRowId_"]')
 
-        american_rows = []
+        usd_rows = []
 
         for row in rows:
             td_elements = row.find_all('td')
             for td in td_elements:
-                if 'CNY' in td.text:
-                    american_rows.append(row)
+                if 'USD' in td.text:
+                    usd_rows.append(row)
 
-        american_rows_with_3_star = []
+        # only 3 star events
+        target_rows = []
 
-        for row in american_rows:
+        for row in usd_rows:
             td_elements = row.find_all('td')
             for td in td_elements:
-                if td.get('data-img_key') == 'bull2':
-                    american_rows_with_3_star.append(row)
+                if td.get('data-img_key') == 'bull3':
+                    target_rows.append(row)
 
-        for row in american_rows_with_3_star:
+        for row in target_rows:
             td_elements = row.find_all('td')
 
             # Extract time from the td element
@@ -82,8 +83,8 @@ async def send_message():
 
             if total_minutes == 0:
                 print("Event is happening now")
-                color = "🟩"
-                message = event_name + " is happening now" + " Previous: " + previous + " " + "Forecast: " + forecast + " " + "Current: " + color + current
+                # color = "🟩"
+                message = event_name + " is happening now" + " Previous: " + previous + " " + "Forecast: " + forecast + " " + "Current: " + current
                 await bot.send_message(chat_id=chat_id, text=message)
 
         # Pause execution for 60 seconds before checking again
