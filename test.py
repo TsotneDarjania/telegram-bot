@@ -6,10 +6,13 @@ import re;
 from datetime import datetime, timedelta
 from telegram.constants import ParseMode
 
+
+# include counts & error counts
+
 # Telegram bot token
 bot_token = '6558911734:AAF25728aE6uYFY5MGtBb3SlyP4ZYf6vRE4'
 # Chat ID
-chat_id = '-1002130774666'
+chat_id = '-1002014070164'
 # hour Difference
 hour_difference = 8
 # currenct
@@ -30,6 +33,7 @@ texts = {
 }
 
 description_text = ""
+event_time_text = ""
 
 class WebScraper:
     def __init__(self, url,currency):
@@ -52,10 +56,15 @@ def get_description_text(event_name):
             print("Unknown text key")
 
 def get_rest_time(event_time_string):
+    global event_time_text
     datetime_str = f"{datetime.now().date()} {event_time_string}"
     event_datetime = datetime.strptime(datetime_str, '%Y-%m-%d %H:%M')
     event_datetime += timedelta(hours=hour_difference)
     current_datetime = datetime.now()
+    current_datetime += timedelta(hours=4)
+    # print("current_detatime ",current_datetime)
+    event_time_text = event_datetime.strftime("%H:%M")
+
     # Calculate difference in time
     time_difference = event_datetime - current_datetime
     total_minutes = time_difference.total_seconds() // 60
@@ -86,9 +95,9 @@ async def send_message_start_event(event_name,event_time, actual, forecast, prev
     smallIcon = ""
 
     if current_value_str == "" or forecast_value_str == "":
-        message = f"<b>{flag}{event_name}</b>მიმდინარეობს ამჟამად\nთარიღი:{event_time}\n\n<b>აღწერა:</b> {description_text}"         
+        message = f"<b>{flag}{event_name}</b>მიმდინარეობს ამჟამად\nთარიღი:{event_time_text}\n\n<b>აღწერა:</b> {description_text}"         
     else:
-        message = f"<b>{flag}{event_name}</b>მიმდინარეობს ამჟამად\nთარიღი:{event_time}\n\n<b>აღწერა:</b> {description_text}\n\n{flag}<b>ფაქტობრივი:</b> {actual}\n{flag}<b>პროგნოზი:</b> {forecast}\n{flag}<b>წინა:</b> {previous}\n\n{smallIcon}  {extraText}"
+        message = f"<b>{flag}{event_name}</b>მიმდინარეობს ამჟამად\nთარიღი:{event_time_text}\n\n<b>აღწერა:</b> {description_text}\n\n{flag}<b>ფაქტობრივი:</b> {actual}\n{flag}<b>პროგნოზი:</b> {forecast}\n{flag}<b>წინა:</b> {previous}\n\n{smallIcon}  {extraText}"
 
         if float(current_value_str) > float(forecast_value_str):
             smallIcon = "🐂"
@@ -139,9 +148,6 @@ async def main():
         # Calculate the time difference
         rest_time = get_rest_time(event_datetime_string)
         print(f"Rest time: {rest_time} minutes for {event_name} event")
-
-        rest_time = 30
-
 
         if rest_time == 30:
             await send_message_before_event(event_name, rest_time, actual, forecast, previous)

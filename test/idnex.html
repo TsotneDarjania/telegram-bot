@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+    <script
+      type="text/javascript"
+      src="http://maps.google.com/maps/api/js?sensor=false"
+    ></script>
+  </head>
+  <body>
+    <script>
+      var mapDiv = document.createElement("div");
+      mapDiv.setAttribute("id", "map");
+      mapDiv.style.cssText = "display: table; width: 100vw; height: 100vh;";
+      document.body.appendChild(mapDiv);
+
+      var locations = [
+        [
+          "<h3>Tbilisi</h3>You must visit this city!",
+          20.47672904338519,
+          34.99977516526972,
+          4,
+        ],
+        [
+          "<h3>Lvyv</h3>A western capital of Ukraine",
+          49.84196798934066,
+          24.0256235253287,
+          3,
+        ],
+        [
+          "<h3>Kharkiv</h3>A first capital of Ukraine",
+          49.9968725638038,
+          36.232661130479805,
+          2,
+        ],
+        ["<h3>Kyiv</h3>A capital of Ukraine", 50.4643, 30.4948, 1],
+      ];
+
+      var map = new google.maps.Map(document.getElementById("map"), {
+        zoom: 4,
+        center: new google.maps.LatLng(50.4, 30.4),
+        mapTypeId: google.maps.MapTypeId.ROADMAP,
+      });
+
+      var infowindow = new google.maps.InfoWindow();
+
+      var marker, i;
+
+      for (i = 0; i < locations.length; i++) {
+        marker = new google.maps.Marker({
+          position: new google.maps.LatLng(locations[i][1], locations[i][2]),
+          map: map,
+        });
+
+        google.maps.event.addListener(
+          marker,
+          "click",
+          (function (marker, i) {
+            return function () {
+              infowindow.setContent(locations[i][0]);
+              infowindow.open(map, marker);
+            };
+          })(marker, i)
+        );
+      }
+    </script>
+  </body>
+</html>
